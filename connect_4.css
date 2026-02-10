@@ -1,32 +1,31 @@
-/* connect_4.css (FULL) */
+
+:root{
+  
+  --cell: clamp(40px, 11vw, 60px);
+  --gap:  clamp(5px, 1.6vw, 8px);
+  --pad:  clamp(8px, 2vw, 10px);
+  --inset: clamp(4px, 1.2vw, 6px); 
+}
 
 body{
   font-family: system-ui, Arial;
   margin: 0;
   display: grid;
   place-items: center;
-  min-height: 100vh;
+  min-height: 100svh; 
   background-color: rgb(228, 228, 199);
 }
 
 .app{
-  width: min(520px, 92vw);
+  width: min(520px, 95vw);
 }
 
-.controls{
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  margin-bottom: 12px;
-  flex-wrap: wrap;
-}
 
-.status{ font-weight: 600; }
 
 .drop-row{
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
+  gap: var(--gap);
   margin-bottom: 10px;
 }
 
@@ -36,27 +35,26 @@ body{
   cursor: pointer;
 }
 
-
 .board-wrap{
   position: relative;
   display: inline-block;
-  overflow: hidden;         
+  overflow: hidden;
   border-radius: 12px;
 }
 
-/* Grid */
+
 .board{
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
-  padding: 10px;
+  gap: var(--gap);
+  padding: var(--pad);
   border-radius: 12px;
 }
 
-/* Cell (hole) */
+
 .cell{
-  width: 60px;
-  height: 60px;
+  width: var(--cell);
+  height: var(--cell);
   border-radius: 50%;
   border: 2px solid rgb(51, 51, 44);
   background: beige;
@@ -64,13 +62,13 @@ body{
   overflow: hidden;
 }
 
-/* Disc inside cells */
+
 .cell .disc{
   position: absolute;
-  top: 6px;
-  left: 6px;
-  width: calc(100% - 12px);   
-  height: calc(100% - 12px);  
+  top: var(--inset);
+  left: var(--inset);
+  width: calc(100% - (2 * var(--inset)));
+  height: calc(100% - (2 * var(--inset)));
   border-radius: 50%;
   box-shadow:
     inset 0 -8px 10px rgba(0,0,0,0.25),
@@ -83,8 +81,8 @@ body{
 
 .fall-disc{
   position: absolute;
-  width: 48px;
-  height: 48px;
+  width: calc(var(--cell) - (2 * var(--inset)));
+  height: calc(var(--cell) - (2 * var(--inset)));
   border-radius: 50%;
   box-shadow:
     inset 0 -8px 10px rgba(0,0,0,0.25),
