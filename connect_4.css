@@ -1,12 +1,23 @@
 
 :root{
-  
-  --cell: clamp(40px, 11vw, 60px);
-  --gap:  clamp(5px, 1.6vw, 8px);
-  --pad:  clamp(8px, 2vw, 10px);
-  --inset: clamp(4px, 1.2vw, 6px); 
+  --design-w: 520;   
+  --design-h: 760;   
+  --safe: 16px;      
 }
+.app{
+  width: 520px; 
 
+  
+  --scaleW: calc((100vw - (2 * var(--safe))) / (var(--design-w) * 1px));
+  --scaleH: calc((100svh - (2 * var(--safe))) / (var(--design-h) * 1px));
+  --scale: min(1, min(var(--scaleW), var(--scaleH)));
+
+  transform: scale(var(--scale));
+  transform-origin: top center;
+
+  
+  margin: 0 auto;
+}
 body{
   font-family: system-ui, Arial;
   margin: 0;
@@ -95,3 +106,4 @@ body{
 
 .fall-disc.x{ background: #ff0000; }
 .fall-disc.o{ background: #003cff; }
+
