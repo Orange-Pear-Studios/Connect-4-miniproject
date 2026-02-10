@@ -1,0 +1,99 @@
+/* connect_4.css (FULL) */
+
+body{
+  font-family: system-ui, Arial;
+  margin: 0;
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  background-color: rgb(228, 228, 199);
+}
+
+.app{
+  width: min(520px, 92vw);
+}
+
+.controls{
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.status{ font-weight: 600; }
+
+.drop-row{
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.drop-row button{
+  padding: 10px 0;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+
+.board-wrap{
+  position: relative;
+  display: inline-block;
+  overflow: hidden;         
+  border-radius: 12px;
+}
+
+/* Grid */
+.board{
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  padding: 10px;
+  border-radius: 12px;
+}
+
+/* Cell (hole) */
+.cell{
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 2px solid rgb(51, 51, 44);
+  background: beige;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Disc inside cells */
+.cell .disc{
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: calc(100% - 12px);   
+  height: calc(100% - 12px);  
+  border-radius: 50%;
+  box-shadow:
+    inset 0 -8px 10px rgba(0,0,0,0.25),
+    0 4px 8px rgba(0,0,0,0.18);
+}
+
+.cell.x .disc{ background: #ff0000; }
+.cell.o .disc{ background: #003cff; }
+
+
+.fall-disc{
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  box-shadow:
+    inset 0 -8px 10px rgba(0,0,0,0.25),
+    0 4px 8px rgba(0,0,0,0.18);
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(0px, 0px);
+  will-change: transform;
+}
+
+.fall-disc.x{ background: #ff0000; }
+.fall-disc.o{ background: #003cff; }

@@ -1,0 +1,49 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Connect 4</title>
+  <link rel="stylesheet" href="./connect_4.css" />
+</head>
+<body>
+  <main class="app">
+    <h1>Connect 4</h1>
+
+    <div class="controls">
+      <label>
+        Mode:
+        <select id="mode">
+          <option value="pvp">Player vs Player</option>
+          <option value="cpu">Player vs Computer</option>
+          <option value="debug">CPU vs CPU</option>
+        </select>
+      </label>
+
+      <label id="starterWrap" style="display:none;">
+        Who starts?
+        <select id="starter">
+          <option value="player">Player</option>
+          <option value="cpu">Computer</option>
+        </select>
+      </label>
+
+      <button id="restart">Restart</button>
+      <span id="status" class="status"></span>
+    </div>
+
+    <div id="dropRow" class="drop-row"></div>
+
+
+    <div class="board-wrap" id="boardWrap">
+      <div id="board" class="board" aria-label="Connect 4 board"></div>
+
+  
+      <div id="fallDisc" class="fall-disc" aria-hidden="true"></div>
+    </div>
+  </main>
+
+  <script src="./connect_4.js"></script>
+</body>
+</html>
