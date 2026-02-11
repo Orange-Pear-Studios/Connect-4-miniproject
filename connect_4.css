@@ -1,13 +1,196 @@
-.board {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 2px; /* Adjusting the gap between the cells */
-    padding: 10px; /* Adding padding to the board */
+/* connect_4.css — FULL (status stays next to Restart, not far-right) */
+
+:root{
+  /* Make the board respond to BOTH width + height with NO minimum floor */
+  --cell: min(10vw, 9vmin, 12vh);
+
+  /* Scale other things proportionally (also no floors) */
+  --gap:  calc(var(--cell) * 0.14);
+  --pad:  calc(var(--cell) * 0.18);
+  --inset:calc(var(--cell) * 0.10);
+
+  /* Disc derived from cell */
+  --disc: calc(var(--cell) - (2 * var(--inset)));
 }
 
-.cell {
-    width: 50px; /* Adjust cell width */
-    height: 50px; /* Adjust cell height */
-    background-color: #f0f0f0;
-    border-radius: 5px;
+body{
+  font-family: system-ui, Arial;
+  margin: 0;
+  display: grid;
+  place-items: center;
+  min-height: 100vh;   
+  background-color: rgb(228, 228, 199);
 }
+
+
+.app{
+  width: max-content;
+  max-width: 95vw;
+  margin: 0 auto;
+  padding: calc(var(--cell) * 0.25);
+}
+
+/* Title */
+h1{
+  margin: 0 0 calc(var(--cell) * 0.20) 0;
+  font-size: calc(var(--cell) * 0.5);
+  line-height: 1.05;
+}
+
+/* ===== Controls (two-column layout) ===== */
+
+.controls{
+  display: grid;
+  grid-template-columns: 1fr auto; /* left: labels, right: restart+status */
+  align-items: center;
+  column-gap: calc(var(--cell) * 0.20);
+  row-gap: calc(var(--cell) * 0.18);
+  margin-bottom: calc(var(--cell) * 0.20);
+}
+
+/* Labels act as horizontal groups */
+.controls > label{
+  display: flex;
+  align-items: center;
+  gap: calc(var(--cell) * 0.16);
+  min-width: 0;
+  white-space: nowrap;
+  font-size: calc(var(--cell) * 0.35);
+}
+
+/* Who starts wrapper label */
+#starterWrap{
+  display: flex;
+  align-items: center;
+  gap: calc(var(--cell) * 0.16);
+  min-width: 0;
+  white-space: nowrap;
+  font-size: calc(var(--cell) * 0.35);
+}
+
+/* Right side: Restart + Status (kept together) */
+.controls-right{
+  display: flex;
+  align-items: center;
+  gap: calc(var(--cell) * 0.20);
+  justify-content: flex-start;
+}
+
+/* Inputs/buttons */
+.controls select,
+.controls button{
+  font-size: calc(var(--cell) * 0.34);
+  padding: calc(var(--cell) * 0.12) calc(var(--cell) * 0.22);
+  border-radius: calc(var(--cell) * 0.18);
+  border: 2px solid rgb(51, 51, 44);
+  background: rgba(255,255,255,0.75);
+  cursor: pointer;
+}
+
+.controls select{ width: 100%; }
+.status{
+  white-space: nowrap;
+  font-weight: 700;
+  font-size: calc(var(--cell) * 0.40);
+}
+
+/* Small screens: stack cleanly */
+@media (max-width: 320px){
+  .controls{
+    grid-template-columns: 1fr;
+  }
+  .controls-right{
+    justify-content: flex-start;
+  }
+}
+
+/* ===== Drop buttons (locked to board width) ===== */
+
+.drop-row{
+  display: grid;
+  grid-template-columns: repeat(7, var(--cell));
+  gap: var(--gap);
+  padding: var(--pad);
+  margin-bottom: calc(var(--cell) * 0.18);
+  width: max-content;
+}
+
+.drop-row button{
+  width: 100%;
+  height: calc(var(--cell) * 0.65);
+  font-weight: 700;
+  font-size: calc(var(--cell) * 0.45);
+  border-radius: calc(var(--cell) * 0.18);
+  border: 2px solid rgb(51, 51, 44);
+  background: rgba(255,255,255,0.55);
+  cursor: pointer;
+}
+
+.drop-row button:disabled{
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ===== Board ===== */
+
+
+.board-wrap{
+  display: inline-block;   /* shrink to board width */
+  position: relative;      /* ⭐ makes this the coordinate system */
+  margin: 0 auto;
+}
+.board{
+  display: grid;
+  grid-template-columns: repeat(7, var(--cell));
+  gap: var(--gap);
+  padding: var(--pad);
+  border-radius: 12px;
+}
+
+.cell{
+  width: var(--cell);
+  height: var(--cell);
+  border-radius: 50%;
+  border: 2px solid rgb(51, 51, 44);
+  background: beige;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Disc inside cells */
+.cell .disc{
+  position: absolute;
+  top: var(--inset);
+  left: var(--inset);
+  width: var(--disc);
+  height: var(--disc);
+  border-radius: 50%;
+  box-shadow:
+    inset 0 calc(-0.14 * var(--cell)) calc(0.17 * var(--cell)) rgba(0,0,0,0.25),
+    0 calc(0.07 * var(--cell)) calc(0.14 * var(--cell)) rgba(0,0,0,0.18);
+}
+
+.cell.x .disc{ background: #ff0000; }
+.cell.o .disc{ background: #003cff; }
+
+/* Falling disc */
+.fall-disc{
+  position: absolute;
+  left: 0;
+  top: 0;
+
+  width: var(--disc);
+  height: var(--disc);
+  border-radius: 50%;
+  box-shadow:
+    inset 0 calc(-0.14 * var(--cell)) calc(0.17 * var(--cell)) rgba(0,0,0,0.25),
+    0 calc(0.07 * var(--cell)) calc(0.14 * var(--cell)) rgba(0,0,0,0.18);
+
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+}
+  
+
+.fall-disc.x{ background: #ff0000; }
+.fall-disc.o{ background: #003cff; }
