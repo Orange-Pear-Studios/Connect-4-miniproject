@@ -151,7 +151,7 @@ function setStatus(textOverride = null) {
     return;
   }
 
-  // debug
+ 
   statusEl.textContent = (current === "X") ? "CPU (X)" : "CPU (O)";
 }
 
@@ -170,25 +170,25 @@ function findLandingRow(col) {
 }
 
 function checkWin(b, token) {
-  // horizontal
+  
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c <= COLS - 4; c++) {
       if (b[r][c] === token && b[r][c + 1] === token && b[r][c + 2] === token && b[r][c + 3] === token) return true;
     }
   }
-  // vertical
+  
   for (let c = 0; c < COLS; c++) {
     for (let r = 0; r <= ROWS - 4; r++) {
       if (b[r][c] === token && b[r + 1][c] === token && b[r + 2][c] === token && b[r + 3][c] === token) return true;
     }
   }
-  // diag down-right
+  
   for (let r = 0; r <= ROWS - 4; r++) {
     for (let c = 0; c <= COLS - 4; c++) {
       if (b[r][c] === token && b[r + 1][c + 1] === token && b[r + 2][c + 2] === token && b[r + 3][c + 3] === token) return true;
     }
   }
-  // diag up-right
+  
   for (let r = 3; r < ROWS; r++) {
     for (let c = 0; c <= COLS - 4; c++) {
       if (b[r][c] === token && b[r - 1][c + 1] === token && b[r - 2][c + 2] === token && b[r - 3][c + 3] === token) return true;
@@ -201,7 +201,7 @@ function isDraw() {
   return board[0].every(v => v !== null);
 }
 
-// ===== Falling animation (no hardcoded sizes) =====
+
 function getCenterInWrap(el) {
   const wrapRect = boardWrapEl.getBoundingClientRect();
   const r = el.getBoundingClientRect();
@@ -219,14 +219,14 @@ function animateFall(row, col, token) {
   fallDiscEl.className = `fall-disc ${token.toLowerCase()}`;
   fallDiscEl.style.opacity = "1";
 
-  const startY = -target.h; // start above board
+  const startY = -target.h; 
   const duration = Math.min(520, 220 + row * 70);
   const t0 = performance.now();
 
   return new Promise((resolve) => {
     function step(t) {
       const p = Math.min(1, (t - t0) / duration);
-      const e = 1 - Math.pow(1 - p, 3); // easeOutCubic
+      const e = 1 - Math.pow(1 - p, 3);
 
       const y = startY + (target.y - startY) * e;
 
@@ -240,7 +240,7 @@ function animateFall(row, col, token) {
       }
     }
 
-    // set initial transform immediately
+    
     fallDiscEl.style.transform =
       `translate(${target.x}px, ${startY}px) translate(-50%, -50%)`;
 
@@ -248,7 +248,7 @@ function animateFall(row, col, token) {
   });
 }
 
-// ===== Game flow =====
+
 async function playMove(col, token) {
   if (locked || gameOver) return false;
 
@@ -301,11 +301,11 @@ function maybeAutoMove() {
 
   const auto =
     (mode === "cpu" && current === "O") ||
-    (mode === "debug"); // both sides are CPU in debug
+    (mode === "debug"); 
 
   if (!auto) return;
 
-  // small delay feels more natural
+  
   setTimeout(() => {
     if (gameOver || locked) return;
     const col = chooseCpuMove(current);
@@ -313,7 +313,6 @@ function maybeAutoMove() {
   }, 180);
 }
 
-// ===== Simple CPU =====
 function validColumns() {
   const cols = [];
   for (let c = 0; c < COLS; c++) {
@@ -338,15 +337,15 @@ function tryWinningMove(token) {
 function chooseCpuMove(token) {
   const opp = (token === "X") ? "O" : "X";
 
-  // 1) win now
+  
   const winCol = tryWinningMove(token);
   if (winCol !== null) return winCol;
 
-  // 2) block opponent win now
+
   const blockCol = tryWinningMove(opp);
   if (blockCol !== null) return blockCol;
 
-  // 3) evaluate moves (avoid giving forks; prefer creating forks)
+  
   const cols = validColumns();
   const scored = [];
 
@@ -385,7 +384,7 @@ function chooseCpuMove(token) {
 
   scored.sort((a, b) => b.score - a.score);
 
-  // If everything is terrible, fall back
+ 
   return scored.length ? scored[0].c : cols[Math.floor(Math.random() * cols.length)];
 }
 
@@ -427,5 +426,6 @@ function countImmediateWinningMovesOn(b, token) {
   }
   return count;
 }
+
 
 
