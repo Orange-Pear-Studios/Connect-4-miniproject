@@ -1,10 +1,10 @@
-// ===== Connect 4 (JS) — Python-style AI (minimax + alpha-beta + heuristic) =====
+
 
 const ROWS = 6;
 const COLS = 7;
 
 
-const DEPTH = 6;
+const DEPTH = 9;
 
 
 const POSITION_WEIGHTS = [
@@ -496,3 +496,4 @@ function chooseCpuMove(token) {
 
   return bestMove(board, token);
 }
+
