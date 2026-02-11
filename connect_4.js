@@ -4,7 +4,7 @@ const ROWS = 6;
 const COLS = 7;
 
 
-const DEPTH = 9;
+const DEPTH = 8;
 
 
 const POSITION_WEIGHTS = [
@@ -496,4 +496,5 @@ function chooseCpuMove(token) {
 
   return bestMove(board, token);
 }
+
 
