@@ -352,7 +352,6 @@ function scoreWindow(window4, comp) {
 }
 
 function countThreats(b, token) {
-  =
   let ct = 0;
   for (let col = 0; col < COLS; col++) {
     if (b[0][col] !== null) continue;
@@ -375,7 +374,6 @@ function heuristic(b, comp) {
     }
   }
 
-  =
   for (let r = 0; r <= ROWS - 4; r++) {
     for (let c = 0; c < COLS; c++) {
       const w = [b[r][c], b[r + 1][c], b[r + 2][c], b[r + 3][c]];
@@ -496,5 +494,6 @@ function chooseCpuMove(token) {
 
   return bestMove(board, token);
 }
+
 
 
