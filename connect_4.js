@@ -1,16 +1,27 @@
-
+// ===== Connect 4 (JS) — Python-style AI (minimax + alpha-beta + heuristic) =====
 
 const ROWS = 6;
 const COLS = 7;
 
 
+const DEPTH = 6;
+
+
+const POSITION_WEIGHTS = [
+  [3, 4, 5, 7, 5, 4, 3],
+  [3, 4, 5, 7, 5, 4, 3],
+  [3, 4, 5, 7, 5, 4, 3],
+  [3, 4, 5, 7, 5, 4, 3],
+  [3, 4, 5, 7, 5, 4, 3],
+  [3, 4, 5, 7, 5, 4, 3],
+];
+
 let board = newBoard();
 let current = "X";
-let mode = "pvp";         
-let starter = "player";    
+let mode = "pvp";          
+let starter = "player";   
 let gameOver = false;
 let locked = false;
-
 
 const boardWrapEl = document.getElementById("boardWrap");
 const boardEl = document.getElementById("board");
@@ -29,9 +40,36 @@ buildBoardDOM();
 wireUI();
 resetGame();
 
-
 function newBoard() {
   return Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+}
+
+function cloneBoard(b) {
+  return b.map(row => row.slice());
+}
+
+function findLandingRowOn(b, col) {
+  for (let r = ROWS - 1; r >= 0; r--) {
+    if (b[r][col] === null) return r;
+  }
+  return -1;
+}
+
+function applyMoveOn(b, col, token) {
+  const r = findLandingRowOn(b, col);
+  if (r < 0) return null;
+  b[r][col] = token;
+  return r;
+}
+
+function isDrawOn(b) {
+  return b[0].every(v => v !== null);
+}
+
+
+function getMovesOn(b) {
+  const order = [3, 2, 4, 1, 5, 0, 6];
+  return order.filter(c => b[0][c] === null);
 }
 
 function buildBoardDOM() {
@@ -84,23 +122,23 @@ function resetGame() {
   gameOver = false;
   locked = false;
 
-  
   if (mode === "pvp") {
     current = "X";
-  } else if (mode === "cpu") {
-    
-    current = (starter === "player") ? "X" : "O";
   } else {
     
-    current = (starter === "player") ? "X" : "O"; 
+    current = (starter === "player") ? "X" : "O";
   }
 
   renderBoard();
   updateDropRowEnabled();
   setStatus();
 
-  
   maybeAutoMove();
+}
+
+
+function cellElAt(r, c) {
+  return boardEl.children[r * COLS + c];
 }
 
 function renderBoard() {
@@ -116,16 +154,6 @@ function renderBoard() {
   }
 }
 
-function cellElAt(r, c) {
-  return boardEl.children[r * COLS + c];
-}
-
-function updateDropRowEnabled() {
-  const btns = [...dropRowEl.querySelectorAll("button")];
-  for (let c = 0; c < COLS; c++) {
-    btns[c].disabled = locked || gameOver || (board[0][c] !== null) || !isHumanTurn();
-  }
-}
 
 function isHumanTurn() {
   if (mode === "pvp") return true;
@@ -133,25 +161,29 @@ function isHumanTurn() {
   return false; 
 }
 
+function updateDropRowEnabled() {
+  const btns = [...dropRowEl.querySelectorAll("button")];
+  for (let c = 0; c < COLS; c++) {
+    btns[c].disabled =
+      locked || gameOver || (board[0][c] !== null) || !isHumanTurn();
+  }
+}
+
 function setStatus(textOverride = null) {
   if (textOverride) {
     statusEl.textContent = textOverride;
     return;
   }
-
   if (gameOver) return;
 
   if (mode === "pvp") {
     statusEl.textContent = `${current}'s turn`;
     return;
   }
-
   if (mode === "cpu") {
     statusEl.textContent = (current === "X") ? "Player's turn" : "Computer's turn";
     return;
   }
-
- 
   statusEl.textContent = (current === "X") ? "CPU (X)" : "CPU (O)";
 }
 
@@ -162,12 +194,6 @@ function switchTurn() {
   maybeAutoMove();
 }
 
-function findLandingRow(col) {
-  for (let r = ROWS - 1; r >= 0; r--) {
-    if (board[r][col] === null) return r;
-  }
-  return -1;
-}
 
 function checkWin(b, token) {
   
@@ -182,13 +208,13 @@ function checkWin(b, token) {
       if (b[r][c] === token && b[r + 1][c] === token && b[r + 2][c] === token && b[r + 3][c] === token) return true;
     }
   }
-  
+ 
   for (let r = 0; r <= ROWS - 4; r++) {
     for (let c = 0; c <= COLS - 4; c++) {
       if (b[r][c] === token && b[r + 1][c + 1] === token && b[r + 2][c + 2] === token && b[r + 3][c + 3] === token) return true;
     }
   }
-  
+
   for (let r = 3; r < ROWS; r++) {
     for (let c = 0; c <= COLS - 4; c++) {
       if (b[r][c] === token && b[r - 1][c + 1] === token && b[r - 2][c + 2] === token && b[r - 3][c + 3] === token) return true;
@@ -197,17 +223,13 @@ function checkWin(b, token) {
   return false;
 }
 
-function isDraw() {
-  return board[0].every(v => v !== null);
-}
-
 
 function getCenterInWrap(el) {
   const wrapRect = boardWrapEl.getBoundingClientRect();
   const r = el.getBoundingClientRect();
   return {
     x: (r.left - wrapRect.left) + r.width / 2,
-    y: (r.top  - wrapRect.top)  + r.height / 2,
+    y: (r.top - wrapRect.top) + r.height / 2,
     h: r.height
   };
 }
@@ -219,7 +241,7 @@ function animateFall(row, col, token) {
   fallDiscEl.className = `fall-disc ${token.toLowerCase()}`;
   fallDiscEl.style.opacity = "1";
 
-  const startY = -target.h; 
+  const startY = -target.h;
   const duration = Math.min(520, 220 + row * 70);
   const t0 = performance.now();
 
@@ -240,7 +262,6 @@ function animateFall(row, col, token) {
       }
     }
 
-    
     fallDiscEl.style.transform =
       `translate(${target.x}px, ${startY}px) translate(-50%, -50%)`;
 
@@ -248,11 +269,10 @@ function animateFall(row, col, token) {
   });
 }
 
-
 async function playMove(col, token) {
   if (locked || gameOver) return false;
 
-  const row = findLandingRow(col);
+  const row = findLandingRowOn(board, col);
   if (row < 0) return false;
 
   locked = true;
@@ -270,15 +290,13 @@ async function playMove(col, token) {
 
     if (mode === "cpu") {
       statusEl.textContent = (token === "X") ? "Player wins!" : "Computer wins!";
-    } else if (mode === "debug") {
-      statusEl.textContent = `${token} wins!`;
     } else {
       statusEl.textContent = `${token} wins!`;
     }
     return true;
   }
 
-  if (isDraw()) {
+  if (isDrawOn(board)) {
     gameOver = true;
     locked = false;
     updateDropRowEnabled();
@@ -301,11 +319,10 @@ function maybeAutoMove() {
 
   const auto =
     (mode === "cpu" && current === "O") ||
-    (mode === "debug"); 
+    (mode === "debug");
 
   if (!auto) return;
 
-  
   setTimeout(() => {
     if (gameOver || locked) return;
     const col = chooseCpuMove(current);
@@ -313,119 +330,169 @@ function maybeAutoMove() {
   }, 180);
 }
 
-function validColumns() {
-  const cols = [];
-  for (let c = 0; c < COLS; c++) {
-    if (board[0][c] === null) cols.push(c);
-  }
-  return cols;
+
+
+
+function scoreWindow(window4, comp) {
+  const opp = (comp === "X") ? "O" : "X";
+  let s = 0;
+
+  const compCount = window4.filter(v => v === comp).length;
+  const oppCount = window4.filter(v => v === opp).length;
+  const emptyCount = window4.filter(v => v === null).length;
+
+  if (compCount === 4) s += 1000000;
+  else if (compCount === 3 && emptyCount === 1) s += 100;
+  else if (compCount === 2 && emptyCount === 2) s += 10;
+
+  if (oppCount === 3 && emptyCount === 1) s -= 100;
+  else if (oppCount === 2 && emptyCount === 2) s -= 10;
+
+  return s;
 }
 
-function tryWinningMove(token) {
-  const cols = validColumns();
-  for (const c of cols) {
-    const r = findLandingRow(c);
-    if (r < 0) continue;
-    board[r][c] = token;
-    const win = checkWin(board, token);
-    board[r][c] = null;
-    if (win) return c;
+function countThreats(b, token) {
+  =
+  let ct = 0;
+  for (let col = 0; col < COLS; col++) {
+    if (b[0][col] !== null) continue;
+    const temp = cloneBoard(b);
+    applyMoveOn(temp, col, token);
+    if (checkWin(temp, token)) ct++;
   }
+  return ct;
+}
+
+function heuristic(b, comp) {
+  const opp = (comp === "X") ? "O" : "X";
+  let s = 0;
+
+ 
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c <= COLS - 4; c++) {
+      const w = [b[r][c], b[r][c + 1], b[r][c + 2], b[r][c + 3]];
+      s += scoreWindow(w, comp);
+    }
+  }
+
+  =
+  for (let r = 0; r <= ROWS - 4; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const w = [b[r][c], b[r + 1][c], b[r + 2][c], b[r + 3][c]];
+      s += scoreWindow(w, comp);
+    }
+  }
+
+  
+  for (let r = 0; r <= ROWS - 4; r++) {
+    for (let c = 0; c <= COLS - 4; c++) {
+      const w = [b[r][c], b[r + 1][c + 1], b[r + 2][c + 2], b[r + 3][c + 3]];
+      s += scoreWindow(w, comp);
+    }
+  }
+
+ 
+  for (let r = 0; r <= ROWS - 4; r++) {
+    for (let c = 3; c < COLS; c++) {
+      const w = [b[r][c], b[r + 1][c - 1], b[r + 2][c - 2], b[r + 3][c - 3]];
+      s += scoreWindow(w, comp);
+    }
+  }
+
+  
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      if (b[r][c] === comp) s += POSITION_WEIGHTS[r][c];
+      else if (b[r][c] === opp) s -= POSITION_WEIGHTS[r][c];
+    }
+  }
+
+  
+  const mt = countThreats(b, comp);
+  const ot = countThreats(b, opp);
+
+  if (mt >= 2) s += 1000000;
+  else if (mt === 1) s += 50;
+
+  if (ot >= 2) s -= 1000000;
+  else if (ot === 1) s -= 100;
+
+  let compCenter = 0;
+  let oppCenter = 0;
+  for (let r = 0; r < ROWS; r++) {
+    if (b[r][3] === comp) compCenter++;
+    else if (b[r][3] === opp) oppCenter++;
+  }
+  s += compCenter * 6;
+  s -= oppCenter * 6;
+
+  return s;
+}
+
+function evalBoard(b, comp) {
+  const opp = (comp === "X") ? "O" : "X";
+  if (checkWin(b, comp)) return 1000000000;
+  if (checkWin(b, opp)) return -1000000000;
+  if (isDrawOn(b)) return 0;
   return null;
 }
 
+function minimax(b, depth, maximizing, comp, alpha, beta) {
+  const st = evalBoard(b, comp);
+  if (st !== null) return st;
+
+  if (depth === 0) return heuristic(b, comp);
+
+  if (maximizing) {
+    let best = -1e12;
+    for (const col of getMovesOn(b)) {
+      const b2 = cloneBoard(b);
+      applyMoveOn(b2, col, comp);
+      const sc = minimax(b2, depth - 1, false, comp, alpha, beta);
+      if (sc > best) best = sc;
+      if (best > alpha) alpha = best;
+      if (alpha >= beta) break;
+    }
+    return best;
+  } else {
+    const opp = (comp === "X") ? "O" : "X";
+    let best = 1e12;
+    for (const col of getMovesOn(b)) {
+      const b2 = cloneBoard(b);
+      applyMoveOn(b2, col, opp);
+      const sc = minimax(b2, depth - 1, true, comp, alpha, beta);
+      if (sc < best) best = sc;
+      if (best < beta) beta = best;
+      if (alpha >= beta) break;
+    }
+    return best;
+  }
+}
+
+function bestMove(b, comp) {
+  let best = -1e12;
+  let mv = null;
+
+  for (const col of getMovesOn(b)) {
+    const b2 = cloneBoard(b);
+    applyMoveOn(b2, col, comp);
+    const sc = minimax(b2, DEPTH - 1, false, comp, -1e12, 1e12);
+    if (sc > best) {
+      best = sc;
+      mv = col;
+    }
+  }
+
+
+  if (mv === null) {
+    const moves = getMovesOn(b);
+    return moves.length ? moves[0] : 0;
+  }
+  return mv;
+}
+
+
 function chooseCpuMove(token) {
-  const opp = (token === "X") ? "O" : "X";
 
-  
-  const winCol = tryWinningMove(token);
-  if (winCol !== null) return winCol;
-
-
-  const blockCol = tryWinningMove(opp);
-  if (blockCol !== null) return blockCol;
-
-  
-  const cols = validColumns();
-  const scored = [];
-
-  for (const c of cols) {
-    const b1 = cloneBoard(board);
-    if (applyMove(b1, c, token) === null) continue;
-
-    
-    if (countImmediateWinningMovesOn(b1, opp) >= 1) {
-      scored.push({ c, score: -100000000 });
-      continue;
-    }
-
-    
-    let oppBestForkThreat = 0;
-    for (const oc of validColumnsOn(b1)) {
-      const b2 = cloneBoard(b1);
-      if (applyMove(b2, oc, opp) === null) continue;
-      const oppWinsAfter = countImmediateWinningMovesOn(b2, opp);
-      if (oppWinsAfter > oppBestForkThreat) oppBestForkThreat = oppWinsAfter;
-    }
-
-    
-    const myForks = countImmediateWinningMovesOn(b1, token);
-
-    
-    const centerPref = [3, 2, 4, 1, 5, 0, 6].indexOf(c) * -1; 
-    let score = 0;
-
-    if (oppBestForkThreat >= 2) score -= 5000;      
-    if (myForks >= 2) score += 150;                
-    score += centerPref;
-
-    scored.push({ c, score });
-  }
-
-  scored.sort((a, b) => b.score - a.score);
-
- 
-  return scored.length ? scored[0].c : cols[Math.floor(Math.random() * cols.length)];
+  return bestMove(board, token);
 }
-
-function cloneBoard(b) {
-  return b.map(row => row.slice());
-}
-
-function landingRowOn(b, col) {
-  for (let r = ROWS - 1; r >= 0; r--) {
-    if (b[r][col] === null) return r;
-  }
-  return -1;
-}
-
-function validColumnsOn(b) {
-  const cols = [];
-  for (let c = 0; c < COLS; c++) {
-    if (b[0][c] === null) cols.push(c);
-  }
-  return cols;
-}
-
-function applyMove(b, col, token) {
-  const r = landingRowOn(b, col);
-  if (r < 0) return null;
-  b[r][col] = token;
-  return r;
-}
-
-function countImmediateWinningMovesOn(b, token) {
-  let count = 0;
-  for (const c of validColumnsOn(b)) {
-    const r = landingRowOn(b, c);
-    if (r < 0) continue;
-    b[r][c] = token;
-    const win = checkWin(b, token);
-    b[r][c] = null;
-    if (win) count++;
-  }
-  return count;
-}
-
-
-
