@@ -1,17 +1,17 @@
-// connect_4.js — FULL (responsive-safe falling + modes)
+
 
 const ROWS = 6;
 const COLS = 7;
 
-// ===== State =====
+
 let board = newBoard();
 let current = "X";
-let mode = "pvp";          // "pvp" | "cpu" | "debug"
-let starter = "player";    // "player" | "cpu"
+let mode = "pvp";         
+let starter = "player";    
 let gameOver = false;
 let locked = false;
 
-// ===== DOM =====
+
 const boardWrapEl = document.getElementById("boardWrap");
 const boardEl = document.getElementById("board");
 const dropRowEl = document.getElementById("dropRow");
@@ -23,13 +23,13 @@ const starterWrapEl = document.getElementById("starterWrap");
 const starterEl = document.getElementById("starter");
 const restartEl = document.getElementById("restart");
 
-// ===== Init =====
+
 buildDropRow();
 buildBoardDOM();
 wireUI();
 resetGame();
 
-// ===== Helpers =====
+
 function newBoard() {
   return Array.from({ length: ROWS }, () => Array(COLS).fill(null));
 }
@@ -84,22 +84,22 @@ function resetGame() {
   gameOver = false;
   locked = false;
 
-  // Decide who starts for each mode
+  
   if (mode === "pvp") {
     current = "X";
   } else if (mode === "cpu") {
-    // Player is always X, Computer is O
+    
     current = (starter === "player") ? "X" : "O";
   } else {
-    // debug: CPU vs CPU
-    current = (starter === "player") ? "X" : "O"; // reuse dropdown labels
+    
+    current = (starter === "player") ? "X" : "O"; 
   }
 
   renderBoard();
   updateDropRowEnabled();
   setStatus();
 
-  // if CPU starts, play immediately
+  
   maybeAutoMove();
 }
 
@@ -129,8 +129,8 @@ function updateDropRowEnabled() {
 
 function isHumanTurn() {
   if (mode === "pvp") return true;
-  if (mode === "cpu") return current === "X"; // player is X
-  return false; // debug has no human
+  if (mode === "cpu") return current === "X"; 
+  return false; 
 }
 
 function setStatus(textOverride = null) {
@@ -342,17 +342,90 @@ function chooseCpuMove(token) {
   const winCol = tryWinningMove(token);
   if (winCol !== null) return winCol;
 
-  // 2) block opponent win
+  // 2) block opponent win now
   const blockCol = tryWinningMove(opp);
   if (blockCol !== null) return blockCol;
 
-  // 3) prefer center-ish columns
-  const pref = [3, 2, 4, 1, 5, 0, 6];
+  // 3) evaluate moves (avoid giving forks; prefer creating forks)
   const cols = validColumns();
-  for (const c of pref) {
-    if (cols.includes(c)) return c;
+  const scored = [];
+
+  for (const c of cols) {
+    const b1 = cloneBoard(board);
+    if (applyMove(b1, c, token) === null) continue;
+
+    
+    if (countImmediateWinningMovesOn(b1, opp) >= 1) {
+      scored.push({ c, score: -100000000 });
+      continue;
+    }
+
+    
+    let oppBestForkThreat = 0;
+    for (const oc of validColumnsOn(b1)) {
+      const b2 = cloneBoard(b1);
+      if (applyMove(b2, oc, opp) === null) continue;
+      const oppWinsAfter = countImmediateWinningMovesOn(b2, opp);
+      if (oppWinsAfter > oppBestForkThreat) oppBestForkThreat = oppWinsAfter;
+    }
+
+    
+    const myForks = countImmediateWinningMovesOn(b1, token);
+
+    
+    const centerPref = [3, 2, 4, 1, 5, 0, 6].indexOf(c) * -1; 
+    let score = 0;
+
+    if (oppBestForkThreat >= 2) score -= 5000;      
+    if (myForks >= 2) score += 150;                
+    score += centerPref;
+
+    scored.push({ c, score });
   }
 
-  // fallback
-  return cols[Math.floor(Math.random() * cols.length)];
+  scored.sort((a, b) => b.score - a.score);
+
+  // If everything is terrible, fall back
+  return scored.length ? scored[0].c : cols[Math.floor(Math.random() * cols.length)];
 }
+
+function cloneBoard(b) {
+  return b.map(row => row.slice());
+}
+
+function landingRowOn(b, col) {
+  for (let r = ROWS - 1; r >= 0; r--) {
+    if (b[r][col] === null) return r;
+  }
+  return -1;
+}
+
+function validColumnsOn(b) {
+  const cols = [];
+  for (let c = 0; c < COLS; c++) {
+    if (b[0][c] === null) cols.push(c);
+  }
+  return cols;
+}
+
+function applyMove(b, col, token) {
+  const r = landingRowOn(b, col);
+  if (r < 0) return null;
+  b[r][col] = token;
+  return r;
+}
+
+function countImmediateWinningMovesOn(b, token) {
+  let count = 0;
+  for (const c of validColumnsOn(b)) {
+    const r = landingRowOn(b, c);
+    if (r < 0) continue;
+    b[r][c] = token;
+    const win = checkWin(b, token);
+    b[r][c] = null;
+    if (win) count++;
+  }
+  return count;
+}
+
+
