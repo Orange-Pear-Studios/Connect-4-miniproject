@@ -11,9 +11,7 @@ import {
   runTransaction
 } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
-/* ---------------------------
-   FIREBASE CONFIG (YOUR KEYS)
----------------------------- */
+
 const firebaseConfig = {
   apiKey: "AIzaSyBS0M-XM4IXxriFneqvk5tdcO257k-MTI8",
   authDomain: "connect-4-42b0c.firebaseapp.com",
@@ -31,13 +29,10 @@ await signInAnonymously(auth);
 const currentUser = auth.currentUser;
 console.log("Signed in:", currentUser.uid);
 
-/* ---------------------------
-   GAME CONSTANTS
----------------------------- */
+
 const ROWS = 6;
 const COLS = 7;
 
-// CPU (local mode only)
 const DEPTH = 8;
 const POSITION_WEIGHTS = [
   [3, 4, 5, 7, 5, 4, 3],
@@ -48,9 +43,7 @@ const POSITION_WEIGHTS = [
   [3, 4, 5, 7, 5, 4, 3],
 ];
 
-/* ---------------------------
-   UI ELEMENTS
----------------------------- */
+
 const boardWrapEl = document.getElementById("boardWrap");
 const boardEl = document.getElementById("board");
 const dropRowEl = document.getElementById("dropRow");
@@ -72,35 +65,27 @@ const roomInfoEl = document.getElementById("roomInfo");
 const meInfoEl = document.getElementById("meInfo");
 const playersInfoEl = document.getElementById("playersInfo");
 
-/* ---------------------------
-   LOCAL GAME STATE
----------------------------- */
-let board = newBoard();       // 2D board for rendering
-let current = "X";            // whose turn (local modes)
-let mode = "pvp";             // pvp | cpu | party
-let starter = "player";       // local cpu only
+
+let board = newBoard();       
+let current = "X";            
+let mode = "pvp";            
+let starter = "player";       
 let gameOver = false;
 let locked = false;
 
-/* ---------------------------
-   ONLINE (PARTY) STATE
----------------------------- */
-let roomId = null;            // current room code
-let mySymbol = null;          // "X" or "O"
-let roomUnsub = null;         // onSnapshot unsubscribe
-let lastSeenMoveId = 0;       // for basic move change detection
 
-/* ---------------------------
-   INIT UI
----------------------------- */
+
+let roomId = null;           
+let mySymbol = null;         
+let roomUnsub = null;         
+let lastSeenMoveId = 0;       
+
 buildDropRow();
 buildBoardDOM();
 wireUI();
 resetGame();
 
-/* ---------------------------
-   BOARD HELPERS
----------------------------- */
+
 function newBoard() {
   return Array.from({ length: ROWS }, () => Array(COLS).fill(null));
 }
@@ -139,9 +124,7 @@ function getMovesOn(b) {
   return order.filter(c => b[0][c] === null);
 }
 
-/* ---------------------------
-   DOM BUILDERS
----------------------------- */
+
 function buildBoardDOM() {
   boardEl.innerHTML = "";
   for (let r = 0; r < ROWS; r++) {
@@ -172,9 +155,7 @@ function buildDropRow() {
   }
 }
 
-/* ---------------------------
-   UI WIRING
----------------------------- */
+
 function wireUI() {
   modeEl.addEventListener("change", async () => {
     mode = modeEl.value;
@@ -182,7 +163,7 @@ function wireUI() {
     starterWrapEl.style.display = (mode === "cpu") ? "" : "none";
     partyPanelEl.classList.toggle("active", mode === "party");
 
-    // leaving party if switching away
+    
     if (mode !== "party") {
       await leaveRoom();
     }
@@ -197,8 +178,8 @@ function wireUI() {
 
   restartEl.addEventListener("click", async () => {
     if (mode === "party" && roomId) {
-      // In party mode, "Restart" resets ONLY if you create a fresh room,
-      // because both players must agree. We'll just show a message.
+      
+     
       setStatus("Party mode: create a new room to restart.");
       return;
     }
@@ -236,9 +217,7 @@ function wireUI() {
   });
 }
 
-/* ---------------------------
-   RESET (LOCAL GAME)
----------------------------- */
+
 function resetGame() {
   board = newBoard();
   gameOver = false;
@@ -249,20 +228,18 @@ function resetGame() {
   } else if (mode === "cpu") {
     current = (starter === "player") ? "X" : "O";
   } else {
-    // party mode board comes from Firestore (if room exists)
+    
     current = "X";
   }
 
   renderBoard();
   updateDropRowEnabled();
-  setStatus(mode === "party" ? "Party mode: create/join a room." : null);
+  setStatus(mode === "party" ? "Party mode: create or join a room." : null);
 
   maybeAutoMove();
 }
 
-/* ---------------------------
-   RENDERING
----------------------------- */
+
 function cellElAt(r, c) {
   return boardEl.children[r * COLS + c];
 }
@@ -283,7 +260,7 @@ function isHumanTurn() {
   if (mode === "pvp") return true;
   if (mode === "cpu") return current === "X";
   if (mode === "party") {
-    // You can only play if you're in a room and it's your symbol's turn
+    
     if (!roomId || !mySymbol) return false;
     return current === mySymbol;
   }
@@ -313,7 +290,7 @@ function setStatus(textOverride = null) {
     statusEl.textContent = (current === "X") ? "Player's turn" : "Computer's turn";
     return;
   }
-  // party
+ 
   if (!roomId) {
     statusEl.textContent = "Party mode: create or join a room.";
     return;
@@ -335,9 +312,7 @@ function switchTurn() {
   maybeAutoMove();
 }
 
-/* ---------------------------
-   WIN CHECK
----------------------------- */
+
 function checkWin(b, token) {
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c <= COLS - 4; c++) {
@@ -362,9 +337,7 @@ function checkWin(b, token) {
   return false;
 }
 
-/* ---------------------------
-   FALL ANIMATION
----------------------------- */
+
 function getCenterInWrap(el) {
   const wrapRect = boardWrapEl.getBoundingClientRect();
   const r = el.getBoundingClientRect();
@@ -409,9 +382,7 @@ function animateFall(row, col, token) {
   });
 }
 
-/* ---------------------------
-   LOCAL MOVE (PVP/CPU)
----------------------------- */
+
 async function playMoveLocal(col, token) {
   if (locked || gameOver) return false;
 
@@ -449,14 +420,11 @@ async function playMoveLocal(col, token) {
   return true;
 }
 
-/* ---------------------------
-   PARTY MOVE (FIRESTORE)
-   Uses transaction so only one player can move per turn.
----------------------------- */
+
 async function playMoveParty(col) {
   if (!roomId || !mySymbol) return;
   if (locked || gameOver) return;
-  if (current !== mySymbol) return; // not your turn
+  if (current !== mySymbol) return; 
 
   const roomRef = doc(db, "rooms", roomId);
 
@@ -464,7 +432,7 @@ async function playMoveParty(col) {
   updateDropRowEnabled();
 
   try {
-    // transaction: check turn, apply move, set winner/draw
+   
     await runTransaction(db, async (tx) => {
       const snap = await tx.get(roomRef);
       if (!snap.exists()) throw new Error("Room not found.");
@@ -481,16 +449,16 @@ async function playMoveParty(col) {
       const row = findLandingRowOn(b2d, col);
       if (row < 0) throw new Error("Column full.");
 
-      // Apply move
+      
       b2d[row][col] = mySymbol;
 
-      // Determine winner/draw
+      
       let winner = null;
       let next = (mySymbol === "X") ? "O" : "X";
 
       if (checkWin(b2d, mySymbol)) {
         winner = mySymbol;
-        next = serverCurrent; // doesn't matter anymore
+        next = serverCurrent; 
       } else if (isDrawOn(b2d)) {
         winner = "draw";
         next = serverCurrent;
@@ -508,7 +476,7 @@ async function playMoveParty(col) {
       });
     });
 
-    // We do NOT locally mutate board here; snapshot listener will update it.
+    
   } catch (err) {
     setStatus(String(err.message || err));
   } finally {
@@ -517,9 +485,7 @@ async function playMoveParty(col) {
   }
 }
 
-/* ---------------------------
-   INPUT HANDLER
----------------------------- */
+
 function handleHumanMove(col) {
   if (!isHumanTurn()) return;
 
@@ -531,9 +497,7 @@ function handleHumanMove(col) {
   playMoveLocal(col, current);
 }
 
-/* ---------------------------
-   CPU (LOCAL)
----------------------------- */
+
 function maybeAutoMove() {
   if (gameOver || locked) return;
 
@@ -547,9 +511,7 @@ function maybeAutoMove() {
   }, 180);
 }
 
-/* ---------------------------
-   CPU MINIMAX
----------------------------- */
+
 function scoreWindow(window4, comp) {
   const opp = (comp === "X") ? "O" : "X";
   let s = 0;
@@ -702,11 +664,9 @@ function chooseCpuMove(token) {
   return bestMove(board, token);
 }
 
-/* ---------------------------
-   PARTY MODE: ROOMS
----------------------------- */
+
 function makeRoomCode6() {
-  // easy read, 6 chars
+  
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let s = "";
   for (let i = 0; i < 6; i++) s += chars[Math.floor(Math.random() * chars.length)];
@@ -720,7 +680,7 @@ function safeTag() {
 }
 
 async function createRoom() {
-  await leaveRoom(); // clean
+  await leaveRoom(); 
 
   const code = makeRoomCode6();
   const roomRef = doc(db, "rooms", code);
@@ -755,7 +715,7 @@ async function createRoom() {
 }
 
 async function joinRoom(code) {
-  await leaveRoom(); // clean
+  await leaveRoom(); 
 
   const roomRef = doc(db, "rooms", code);
   const snap = await getDoc(roomRef);
@@ -768,7 +728,7 @@ async function joinRoom(code) {
   const data = snap.data();
   const myTag = safeTag();
 
-  // already in room?
+ 
   if (data.players?.X?.uid === currentUser.uid) {
     roomId = code;
     mySymbol = "X";
@@ -786,7 +746,7 @@ async function joinRoom(code) {
     return;
   }
 
-  // pick a free seat
+  
   if (!data.players?.X) {
     await updateDoc(roomRef, {
       "players.X": { uid: currentUser.uid, tag: myTag },
@@ -824,7 +784,7 @@ function listenToRoom(code) {
     }
     const data = snap.data();
 
-    // Update room info UI
+    
     roomInfoEl.textContent = code;
     meInfoEl.textContent = mySymbol ? `${mySymbol} (${safeTag()})` : "—";
 
@@ -832,7 +792,7 @@ function listenToRoom(code) {
     const po = data.players?.O ? `${data.players.O.tag} (O)` : "— (O)";
     playersInfoEl.textContent = `${px} vs ${po}`;
 
-    // Update board + current + winner
+   
     const flat = Array.isArray(data.board) ? data.board.slice(0, 42) : Array(42).fill(null);
     board = unflattenBoard(flat);
     current = data.current ?? "X";
@@ -844,13 +804,13 @@ function listenToRoom(code) {
     renderBoard();
     updateDropRowEnabled();
 
-    // Status
+    
     if (winner === "draw") {
       setStatus("Draw!");
     } else if (winner === "X" || winner === "O") {
       setStatus(`${winner} wins!`);
     } else {
-      // waiting for opponent?
+      
       if (!data.players?.O || !data.players?.X) {
         setStatus(`Room ${code}: waiting for 2nd player...`);
       } else {
@@ -858,7 +818,7 @@ function listenToRoom(code) {
       }
     }
 
-    // basic move change detection (optional hook)
+    
     const moveId = data.moveId ?? 0;
     if (moveId !== lastSeenMoveId) lastSeenMoveId = moveId;
   });
@@ -878,7 +838,7 @@ async function leaveRoom() {
   meInfoEl.textContent = "—";
   playersInfoEl.textContent = "—";
 
-  // keep party panel inputs, but reset local board display
+  
   board = newBoard();
   current = "X";
   gameOver = false;
@@ -888,9 +848,7 @@ async function leaveRoom() {
   setPartyControlsDisabled(false);
 }
 
-/* ---------------------------
-   SET INITIAL UI VISIBILITY
----------------------------- */
+
 starterWrapEl.style.display = (mode === "cpu") ? "" : "none";
 
 setStatus("Ready.");
@@ -898,4 +856,5 @@ function setPartyControlsDisabled(disabled) {
   joinRoomEl.disabled = disabled;
   createRoomEl.disabled = disabled;
   roomCodeEl.disabled = disabled;
+
 }
