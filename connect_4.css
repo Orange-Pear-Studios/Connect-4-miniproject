@@ -192,3 +192,60 @@ h1{
 
 }
 
+/* -----------------------------
+   PARTY MODE PANEL
+------------------------------ */
+
+.party-panel{
+  margin-top: calc(var(--cell) * 0.25);
+  padding: calc(var(--cell) * 0.25);
+  border-radius: calc(var(--cell) * 0.25);
+  background: var(--color-surface);
+  border: 2px solid var(--color-secondary);
+  display: none;
+}
+
+.party-panel.active{
+  display: block;
+}
+
+.party-row{
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--cell) * 0.20);
+  align-items: center;
+  margin-bottom: calc(var(--cell) * 0.18);
+}
+
+.party-panel input{
+  font-size: calc(var(--cell) * 0.34);
+  padding: calc(var(--cell) * 0.12) calc(var(--cell) * 0.22);
+  border-radius: calc(var(--cell) * 0.18);
+  border: 2px solid var(--color-secondary);
+  background: var(--color-bg);
+  color: var(--color-text);
+  min-width: calc(var(--cell) * 3);
+}
+
+.party-panel button{
+  font-size: calc(var(--cell) * 0.34);
+  padding: calc(var(--cell) * 0.12) calc(var(--cell) * 0.22);
+  border-radius: calc(var(--cell) * 0.18);
+  border: 2px solid var(--color-secondary);
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.party-panel button:hover{
+  background: var(--color-primary);
+  color: #000;
+}
+
+.party-info{
+  font-size: calc(var(--cell) * 0.32);
+  color: var(--color-secondary);
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--cell) * 0.30);
+}

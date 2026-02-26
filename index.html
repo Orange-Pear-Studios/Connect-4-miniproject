@@ -1,11 +1,8 @@
-
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="description"
-        content="Orange Pear Studios - A connect four game side project (i was bored :))">
   <title>Connect 4</title>
   <link rel="stylesheet" href="./connect_4.css" />
 </head>
@@ -20,6 +17,7 @@
           <option value="pvp">Player vs Player</option>
           <option value="cpu">Player vs Computer</option>
           <option value="debug">CPU vs CPU</option>
+          <option value="party">Online Party</option>
         </select>
       </label>
 
@@ -37,18 +35,40 @@
       </div>
     </div>
 
-    <div id="dropRow" class="drop-row"></div>
+    <!-- PARTY MODE PANEL -->
+    <div id="partyPanel" class="party-panel">
+      <div class="party-row">
+        <label>
+          Your Tag:
+          <input id="tag" maxlength="16" placeholder="Your name" />
+        </label>
 
+        <button id="createRoom">Create Room</button>
+
+        <label>
+          Room Code:
+          <input id="roomCode" maxlength="6" placeholder="ABC123" />
+        </label>
+
+        <button id="joinRoom">Join Room</button>
+        <button id="leaveRoom">Leave</button>
+      </div>
+
+      <div class="party-info">
+        <span><strong>Room:</strong> <span id="roomInfo">—</span></span>
+        <span><strong>You:</strong> <span id="meInfo">—</span></span>
+        <span><strong>Players:</strong> <span id="playersInfo">—</span></span>
+      </div>
+    </div>
+
+    <div id="dropRow" class="drop-row"></div>
 
     <div class="board-wrap" id="boardWrap">
       <div id="board" class="board" aria-label="Connect 4 board"></div>
-
-  
       <div id="fallDisc" class="fall-disc" aria-hidden="true"></div>
     </div>
   </main>
 
-  <script src="./connect_4.js"></script>
+  <script type="module" src="./connect_4.js"></script>
 </body>
 </html>
-
